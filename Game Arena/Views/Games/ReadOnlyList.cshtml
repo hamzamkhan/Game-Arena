@@ -1,0 +1,48 @@
+﻿@model IEnumerable<Game_Arena.Models.Game>
+@{
+    ViewBag.Title = "Games";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Games</h2>
+<p>
+    @Html.ActionLink("New Game", "New", "Games", null, new { @class = "btn btn-primary" })
+</p>
+<table id="games" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Games</th>
+            <th>Genre</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+</table>
+
+    
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table = $("#games").DataTable({
+                ajax: {
+                    url: "/api/games",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        data: "name"
+                    },
+                    {
+                        data: "genre.name"
+                    },
+                    {
+                        data: "price"
+                    }
+
+                ]
+            });
+        });
+    </script>
+}
+

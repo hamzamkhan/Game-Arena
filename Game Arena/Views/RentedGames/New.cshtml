@@ -1,0 +1,154 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "New Rental";
+}
+
+<h2>New Rental Form</h2>
+<form id="newRental">
+    <div class="form-group">
+        <label>Customer</label>
+        <div class="tt-container">
+            <input id="customer" name="customer" data-rule-validCustomer="true" required type="text" value=@Session["Name"] class="form-control" readonly />
+        </div>
+    </div>
+
+    <input type="hidden" id="customerId" name="customerId" value=@Session["Id"] class="" />
+
+    <input type="hidden" id="email" name="email" value=@Session["Email"] class="" />
+
+
+
+    <div class="form-group">
+        <label>Game</label>
+        <div class="tt-container">
+            <input id="game" name="game" type="text" data-rule-atLeastOneGame="true" value="" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Address</label>
+        <div class="tt-container">
+            <input id="address" name="address" type="text" data-rule-address="true" value="" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Contact Number</label>
+        <div class="tt-container">
+            <input id="contactNumber" name="contactNumber" type="text" data-rule-contactNumber="true" value="" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <ul id="games" class="list-group"></ul>
+
+        </div>
+    </div>
+
+    <button class="btn btn-primary">Submit</button>
+</form>
+
+@section scripts
+{
+    @Scripts.Render("~/bundles/jqueryval");
+    <script>
+        $(document).ready(function () {
+            var vm = {
+                gameIds: [],
+                gameNames : []
+            };
+            var customers = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                remote: {
+                    url: '/api/customers?query=%QUERY',
+                    wildcard: '%QUERY'
+                }
+            });
+            $('#customer').typeahead({
+                minLength: 1,
+                highlight: true
+            }, {
+                    name: 'customers',
+                    display: 'name',
+                    source: customers
+                }).on("typeahead:select", function (e, customer) {
+                    vm.customerId = $("#customerId").val();
+                });
+            var games = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                remote: {
+                    url: '/api/games?query=%QUERY',
+                    wildcard: '%QUERY'
+                }
+            });
+            $('#game').typeahead({
+
+                highlight: true
+            }, {
+                    name: 'game',
+                    display: 'name',
+                    source: games
+                }).on("typeahead:select", function (e, game) {
+                    $("#games").append("<li class='list-group-item'>" + game.name + "</li>");
+                    $("#game").typeahead("val", "");
+                    vm.gameIds.push(game.id);
+                    vm.gameNames.push(game.name);
+                });
+
+            vm.homeAddress = $("#address").val();
+            vm.email = $("#email").val();
+            vm.contactNumber = $("#contactNumber").val();
+
+            $.validator.addMethod("validCustomer", function () {
+                return vm.customerId = $("#customerId").val();
+            }, "Please select a valid customer.");
+
+            $.validator.addMethod("atLeastOneGame", function () {
+                return vm.gameIds.length > 0;
+            }, "Please select at least one game.");
+
+            $.validator.addMethod("address", function () {
+                return vm.homeAddress = $("#address").val();
+            }, "Please enter address.");
+
+            $.validator.addMethod("contactNumber", function () {
+                return vm.contactNumber = $("#contactNumber").val();
+            }, "Please enter contact number.");
+
+            var validator = $("#newRental").validate({
+                submitHandler: function () {
+
+                    $.ajax({
+                        url: "/api/newRentedGames",
+                        method: "post",
+                        data: vm
+                    })
+                        .done(function () {
+                            toastr.success("Rental(s) recorded successfully.");
+
+                            $("#game").typeahead("val", "");
+                            $("#games").empty();
+                            $("#address").val("");
+                            $("#contactNumber").val("");
+
+                            vm = { gameIds: [], address: "", contactNumber: "", gameNames:[] };
+
+                            validator.resetForm();
+                        })
+                        .fail(function () {
+                            toastr.error("Unexpected error occurred.");
+                        });
+
+
+                    return false;
+                }
+            });
+
+
+        });
+    </script>
+}

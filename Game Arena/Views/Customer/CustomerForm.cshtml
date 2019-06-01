@@ -1,0 +1,49 @@
+﻿@model Game_Arena.ViewModels.CustomerFormViewModel
+@{
+    ViewBag.Title = "New";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>New Customer</h2>
+
+
+@using (Html.BeginForm("Save", "Customer"))
+{
+    if (ViewBag.Message!=null)
+    {
+        <div class="form-group">
+            <div class="col-md-10">@ViewBag.Message</div>
+        </div>
+    }
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.Name)
+        @Html.TextBoxFor(m => m.Customer.Name, new { @class = "form-control " })
+        @Html.ValidationMessageFor(m => m.Customer.Name)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.Email)
+        @Html.TextBoxFor(m => m.Customer.Email, new { @class = "form-control " })
+        @Html.ValidationMessageFor(m => m.Customer.Email)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.Password)
+        @Html.TextBoxFor(m => m.Customer.Password, new { @class = "form-control " })
+        @Html.ValidationMessageFor(m => m.Customer.Password)
+    </div>
+
+
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.MembershipTypeId)
+
+        @Html.DropDownListFor(m => m.Customer.MembershipTypeId, new SelectList(Model.MembershipTypes, "Id", "Name"), "Select Membership Type", new { @class = "form-control " })
+        @Html.ValidationMessageFor(m => m.Customer.MembershipTypeId)
+    </div>
+
+
+    @Html.HiddenFor(m => m.Customer.Id)
+
+    <button type="submit" class="btn btn-primary">Save</button>
+}
